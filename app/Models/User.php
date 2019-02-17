@@ -17,4 +17,9 @@ class User extends Authenticatable implements MustVerifyEmail
     protected $hidden = [
         'password', 'remember_token',
     ];
+
+    public function addresses()
+    {
+        return $this->hasMany('App\Models\UserAddress');
+    }
 }

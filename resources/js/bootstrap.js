@@ -1,3 +1,4 @@
+window.Swal = require('sweetalert2')
 
 window._ = require('lodash');
 

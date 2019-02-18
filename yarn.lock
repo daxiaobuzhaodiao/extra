@@ -1393,6 +1393,11 @@ charenc@~0.0.1:
   resolved "https://registry.yarnpkg.com/charenc/-/charenc-0.0.2.tgz#c0a1d2f3a7092e03774bfa83f14c0fc5790a8667"
   integrity sha1-wKHS86cJLgN3S/qD8UwPxXkKhmc=
 
+china-area-data@^4.0.0:
+  version "4.0.0"
+  resolved "https://registry.yarnpkg.com/china-area-data/-/china-area-data-4.0.0.tgz#95c27bf4dff8b99ee92f972b1739d551da7f303b"
+  integrity sha512-RG9b/ic5ZIGrPXfWgeDvf1DpMZyD6jKAi5ZBjzAlt500nF5uqH9javgKC7ookGtJzFPHwc7+9hs8NRiGj+nFNw==
+
 chokidar@^2.0.0, chokidar@^2.0.2, chokidar@^2.0.3:
   version "2.1.1"
   resolved "https://registry.yarnpkg.com/chokidar/-/chokidar-2.1.1.tgz#adc39ad55a2adf26548bd2afa048f611091f9184"
@@ -5900,6 +5905,11 @@ svgo@^1.0.0:
     stable "~0.1.6"
     unquote "~1.1.1"
     util.promisify "~1.0.0"
+
+sweetalert2@^8.2.0:
+  version "8.2.0"
+  resolved "https://registry.yarnpkg.com/sweetalert2/-/sweetalert2-8.2.0.tgz#6f4fcb3749847017602605fe856712a4c532f37a"
+  integrity sha512-HwrBqw3ztde7inQMeyd8uUTXu9hThI4myNOmG2P0RWLoOmCu8FZMCNg6oyvLG/rZtzlsfgyaG4xo5E0pJkcwHA==
 
 tapable@^1.0.0, tapable@^1.1.0:
   version "1.1.1"

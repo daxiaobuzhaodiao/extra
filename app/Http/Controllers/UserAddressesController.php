@@ -33,7 +33,7 @@ class UserAddressesController extends Controller
     // 改
     public function update(AddressRequest $request, UserAddress $userAddress)
     {
-        $this->authoriza('isOwnerOf', $userAddress);
+        $this->authoriza('isOwnerOf', $userAddress); // 如果无法经过验证 则返回 401 错误
         $userAddress->update($request->all());
         return redirect()->route('user_addresses.index');
     }

@@ -15,11 +15,11 @@ class Product extends Model
     	'sold_count',
     	'review_count',
     	'price'
-    ]
+    ];
 
     protected $casts = [
     	'on_sale' => 'boolean'
-    ]
+    ];
 
     // 关联 SKU
     public function skus()

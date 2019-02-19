@@ -147,7 +147,7 @@ class ProductsController extends Controller
 
         $form->text('title', '商品名称')->rules('required');
         $form->editor('description', '商品描述')->rules('required');  // 修改为 editor
-        $form->image('image', '商品主图')->rules('required|image');
+        $form->image('image', '商品主图')->uniqueName()->rules('required|image');
         $form->switch('on_sale', '上架')->default(0); // 默认不上架 随时更改
         // $form->number('sold_count', '销量');
         // 直接添加一对多的关联模型

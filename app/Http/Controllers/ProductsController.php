@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Product;
+use App\Exceptions\InvalidRequestException;
 
 class ProductsController extends Controller
 {
@@ -11,7 +12,7 @@ class ProductsController extends Controller
 	{
 		// 创建一个查询构造器
 		$builder = Product::query()->where('on_sale', true);
-		// 判断是否有提交 search 参数
+		// 判断是否提交 search 
 		if($search = $request->input('search', '')){
 			$like = "%{$search}%";
 			// 模糊搜索商品标题，商品详情，sku标题，sku详情
@@ -47,5 +48,13 @@ class ProductsController extends Controller
 			]
 		]);
 		
+	}
+
+	public function show(Product $product)
+	{
+		if(!$product->on_sale){
+			throw new InvalidRequestException('商品未上架');
+		}
+		return view('products.show', ['product' => $product]);
 	}
 }

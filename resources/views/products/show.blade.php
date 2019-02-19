@@ -42,7 +42,11 @@
             <span class="stock"></span>
         </div>
         <div class="buttons">
-          <button class="btn btn-success btn-favor">❤ 收藏</button>
+          @if($favored)
+            <button class="btn btn-danger btn-disfavor">取消收藏</button>
+          @else
+            <button class="btn btn-success btn-favor">点击收藏</button>
+          @endif
           <button class="btn btn-primary btn-add-to-cart">加入购物车</button>
         </div>
       </div>
@@ -73,13 +77,46 @@
 @section('customJS')
     <script>
         $(document).ready(function() {
+            // 显示 sku 价格和库存
             // https://getbootstrap.com/docs/4.0/components/tooltips/#example-enable-tooltips-everywhere
             $('[data-toggle="tooltip"]').tooltip({trigger: 'hover'}) // 固定写法
             $('.sku-btn').click(function(){
                 $('.product-info .price span').text($(this).data('price'))
                 $('.product-info .stock').text('库存： ' + $(this).data('stock') + ' 件')
             })
+            // 收藏
+            $('.btn-favor').click(function() {
+              axios.post('{{ route('products.favor', $product->id) }}').then((res) => {
+                console.log(res.response)
+                Swal.fire('收藏成功', '', 'success').then(() => {
+                  location.reload()
+                })
+              }).catch((err) => {
+                console.log(err.response)
+                if(err.response && err.response.status === 401){
+                  Swal.fire('请先登录', '', 'error').then(() => {
+                    // 跳转到登录页面
+                    location.href = '/login';
+                  })
+                }else if(err.response && err.response.status === 403 ){
+                  Swal.fire('请验证邮箱', '', 'error')
+                }else if(err.response && err.response.data.msg){
+                  Swal.fire(err.response.data.msg, '', 'error')
+                }else {
+                  Swal.fire('系统错误', '', 'error')
+                }
+              })
+            })
+            // 取消收藏
+            $('.btn-disfavor').click(function() {
+              axios.delete('{{ route('products.disfavor', $product->id) }}').then((res) => {
+                Swal.fire('取消成功', '', 'success').then(() => {
+                  location.reload()
+                })
+              }).catch((err) => {
+                console.log(err)
+              })
+            })
         })
     </script>
-    
 @endsection

@@ -7,6 +7,11 @@ use Illuminate\Http\Request;
 
 class InvalidRequestException extends Exception
 {
+    /**
+     * 400 Bad Request
+     * 语义有误，当前请求无法被服务器理解 或者 请求参数有误
+     * 返回 完整的错误信息 和 错误码
+     */
     function __construct(string $message = '', int $code = 400)
     {
         parent::__construct($message, $code);
@@ -20,6 +25,6 @@ class InvalidRequestException extends Exception
             return response()->json(['msg' => $this->message], $this->code);
         }
         // 跳转到自定义错误页面
-        return view('pages.error', ['msg' => $this->message]);
+        return response()->view('pages.error', ['msg' => $this->message], $this->code);
     }
 }

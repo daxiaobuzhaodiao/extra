@@ -22,4 +22,12 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         return $this->hasMany('App\Models\UserAddress');
     }
+
+    public function favoriteProducts()
+    {
+        // belongsToMany() 方法用于定义一个多对多的关联，第一个参数是关联的模型类名，第二个参数是中间表的表名。
+        return $this->belongsToMany('App\Models\Product', 'user_favorite_products')
+            ->withTimestamps()
+            ->orderBy('user_favorite_products.created_at', 'desc');// 默认根据中间表的创建时间倒序排序。
+    }
 }

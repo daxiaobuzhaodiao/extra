@@ -78,8 +78,8 @@
     <script>
         $(document).ready(function() {
             // 显示 sku 价格和库存
-            // https://getbootstrap.com/docs/4.0/components/tooltips/#example-enable-tooltips-everywhere
-            $('[data-toggle="tooltip"]').tooltip({trigger: 'hover'}) // 固定写法
+            // 工具提示 ----- https://getbootstrap.com/docs/4.0/components/tooltips/#example-enable-tooltips-everywhere
+            $('[data-toggle="tooltip"]').tooltip({trigger: 'hover'})
             $('.sku-btn').click(function(){
                 $('.product-info .price span').text($(this).data('price'))
                 $('.product-info .stock').text('库存： ' + $(this).data('stock') + ' 件')
@@ -115,6 +115,45 @@
                 })
               }).catch((err) => {
                 console.log(err)
+              })
+            })
+
+            // 添加购物车
+            $('.btn-add-to-cart').click(function() {
+              // btn-group ------- https://getbootstrap.com/docs/4.0/components/buttons/#checkbox-and-radio-buttons
+              axios.post('{{ route('carts.add') }}', {
+                'sku_id': $('label.active input[name=skus]').val(),
+                'amount': $('.cart_amount input').val()
+              }).then((res) => {
+                // 添加成功
+                Swal.fire('添加购物车成功', '', 'success').then(() => {
+                  location.href = '{{ route('carts.index') }}'
+                })
+              }).catch((err) => {
+                console.log(err.response)
+                // 401 未授权，引导跳转到登录页
+                if(err.response.status === 401){
+                  Swal.fire('请先登录', '', 'error').then(() => {
+                    location.href = '{{ route('login') }}'
+                  }) 
+                // 403 权限，引导跳转到邮箱验证页
+                }else if(err.response.status === 403){
+                  Swal.fire('请先验证邮箱', '', 'error').then(() => {
+                    location.href = '{{ route('verification.notice') }}'
+                  })
+                // 422 表单验证错误，返回错误信息
+                }else if(err.response.status === 422){
+                  var html = '<div>'
+                  _.each(err.response.data.errors, function (err) {
+                    _.each(err, function (err) {
+                      html += err + '<br/>'
+                    })
+                  })
+                  html += '</div>'
+                  Swal.fire(html, '', 'error')
+                }else{
+                  Swal.fire('系统错误', '', 'error')
+                }
               })
             })
         })

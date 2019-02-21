@@ -27,7 +27,11 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         return $this->hasMany('App\Models\CartItem');
     }
-
+    public function orders()
+    {
+        return $this->hasMany('App\Models\Order');
+    }
+    // 通过 中间表 实现 用户与商品之间的收藏关系
     public function favoriteProducts()
     {
         // belongsToMany() 方法用于定义一个多对多的关联，第一个参数是关联的模型类名，第二个参数是中间表的表名。

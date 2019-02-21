@@ -130,7 +130,7 @@
                   location.href = '{{ route('carts.index') }}'
                 })
               }).catch((err) => {
-                console.log(err.response)
+                console.log(err.response.data)
                 // 401 未授权，引导跳转到登录页
                 if(err.response.status === 401){
                   Swal.fire('请先登录', '', 'error').then(() => {

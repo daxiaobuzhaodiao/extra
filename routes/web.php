@@ -13,6 +13,7 @@ Route::group(['middleware' => ['auth', 'verified']], function () {
     Route::post('carts', 'CartItemsController@add')->name('carts.add'); // 添加购物车
     Route::get('carts', 'CartItemsController@index')->name('carts.index');  // 购物车列表
     Route::delete('carts/{productSku}', 'CartItemsController@remove')->name('carts.remove'); // 删除购物车
+    Route::post('orders', 'OrdersController@store')->name('orders.store');
 });
 
 Route::get('products/{product}', 'ProductsController@show')->name('products.show');

@@ -24,6 +24,7 @@ class CartItemsController extends Controller
         }else{
             // 否则就创建一个新的购物车记录 
             $cart = new CartItem(['amount' => $amount]);
+            // associate() 参数可以是 id 也可以是 对象
             $cart->user()->associate($user);
             $cart->productSku()->associate($skuId);
             $cart->save();
@@ -36,7 +37,9 @@ class CartItemsController extends Controller
     {
         // with(['productSku.product']) 方法用来预加载购物车里的商品和 SKU 信息。通过 . 提前加载了与商品 SKU 关联的商品
         $cartItems = auth()->user()->cartItems()->with(['productSku.product'])->get(); 
-        return view('cartItems.index', ['cartItems' => $cartItems]);
+        $addresses = auth()->user()->addresses()->orderBy('last_used_at', 'desc')->get();
+        
+        return view('cartItems.index', ['cartItems' => $cartItems, 'addresses' => $addresses]);
     }
 
     // 删

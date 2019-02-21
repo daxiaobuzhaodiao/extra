@@ -27,15 +27,18 @@
           </td>
           <td class="product_info">
             <div class="preview">
+              <!-- 商品图片 -->
               <a target="_blank" href="{{ route('products.show', [$item->productSku->product_id]) }}">
                 <img src="{{ $item->productSku->product->image_url }}">
               </a>
             </div>
             
             <div @if(!$item->productSku->product->on_sale) class="not_on_sale" @endif>
+              <!-- 商品名称 -->
               <span class="product_title">
                 <a target="_blank" href="{{ route('products.show', [$item->productSku->product_id]) }}">{{ $item->productSku->product->title }}</a>
               </span>
+              <!-- 商品 sku 名称 -->
               <span class="sku_title">{{ $item->productSku->title }}</span>
               <!-- 如果已经下架输出提醒信息 -->
               @if(!$item->productSku->product->on_sale)
@@ -43,8 +46,10 @@
               @endif
             </div>
           </td>
+          <!-- sku 单价 -->
           <td><span class="price">￥{{ $item->productSku->price }}</span></td>
           <td>
+            <!-- 将要购买的 sku 数量 -->
             <input type="text" class="form-control form-control-sm amount" @if(!$item->productSku->product->on_sale) disabled @endif name="amount" value="{{ $item->amount }}">
           </td>
           <td>
@@ -54,6 +59,33 @@
       @endforeach
       </tbody>
     </table>
+    <!-- 地址选择框 和 备注框 开始 -->
+    <div>
+      <form class="form-horizontal" role="form" id="order-form">
+        <div class="form-group row">
+          <label class="col-form-label col-sm-3 text-md-right">选择收货地址</label>
+          <div class="col-sm-9 col-md-7">
+            <select class="form-control" name="address">
+              @foreach($addresses as $address)
+                <option value="{{ $address->id }}">{{ $address->full_address }} {{ $address->contact_name }} {{ $address->contact_phone }}</option>
+              @endforeach
+            </select>
+          </div>
+        </div>
+        <div class="form-group row">
+          <label class="col-form-label col-sm-3 text-md-right">备注</label>
+          <div class="col-sm-9 col-md-7">
+            <textarea name="remark" class="form-control" rows="3"></textarea>
+          </div>
+        </div>
+        <div class="form-group">
+          <div class="offset-sm-3 col-sm-3">
+            <button type="button" class="btn btn-primary btn-create-order">提交订单</button>
+          </div>
+        </div>
+      </form>
+    </div>
+    <!-- 地址选择框 和 备注框 结束 -->
   </div>
 </div>
 </div>
@@ -63,7 +95,6 @@
 @section('customJS')
     <script>
         $(document).ready(function() {
-
             // 删除
             $('.btn-remove').click(function() {
                 // closest() --------  https://developer.mozilla.org/en-US/docs/Web/API/Element/closest
@@ -86,7 +117,7 @@
                                 $(this).closest('tr').remove() // 另一种方式 location.reload()
                             ])
                         }).then((err) => {
-                            console.log(err.data.response)
+                            console.log(err.response.data)
                             // 服务器出错了
                         })
                     }else{
@@ -98,8 +129,58 @@
             // 全选 反选
             $('#select-all').change(function() {
                 // element.prop() ------ http://jquery.cuishifeng.cn/prop.html
-                var checked = $(this).prop('checked')
+                var checked = $(this).prop('checked')   // 返回 true / false
                 $('input[name=select][type=checkbox]:not([disabled])').prop('checked', checked) // 可以批量赋值, 也可以 .each(function () {})
+            })
+
+            // 提交订单
+            $('.btn-create-order').click(function() {
+              // 构建请求参数
+              var requestData = {
+                address_id: $('select[name=address]').val(),
+                items: [],
+                remark: $('textarea[name=remark]').val()
+              }
+              // 遍历 <table> 标签内所有带有 data-id 属性的 <tr> 标签，也就是每一个购物车中的商品 SKU
+              $('table tr[data-id]').each(function() {
+                // 确定当前的 sku 是否被选中 并且 没有被禁用
+                var $checkbox = $(this).find('input[type=checkbox][name=select]')
+                if($checkbox.prop('disabled') || !$checkbox.prop('checked')){
+                  return
+                }
+                // 获取当前 sku 数量
+                var $input = $(this).find('input[name=amount]')
+                // 如果数量的值为 0， 或者不是一个 数字 则也跳过
+                if($input.val() == 0 || isNaN($input.val())){
+                  return
+                }
+                // 我们只需要 sku_id 和 amount 参数 将他们放进 requestData 数组
+                requestData.items.push({
+                  sku_id: $(this).data('id'),
+                  amount: $input.val()
+                })
+              })
+              // console.log(requestData)
+              axios.post('{{ route('orders.store') }}', requestData).then((res) => {
+                console.log(res.response)
+                Swal.fire('订单提交成功', '', 'success')
+              }).catch((err) => {
+                if(err.response.status === 422) {
+                  // 表单验证错误
+                  var html = '<div>'
+                  _.each(err.response.data.errors, function(error) {
+                    _.each(error, function(err) {
+                      html += err + '<br/>'
+                    })
+                  })
+                  html += '</div>'
+                  // 将错误信息输出到弹框
+                  Swal.fire(html, '', 'error')
+                }else{
+                  console.log(err.response)
+                  Swal.fire('未知错误', '', 'error')
+                }
+              })
             })
         })
     </script>

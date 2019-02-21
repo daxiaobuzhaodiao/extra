@@ -20,7 +20,7 @@ class UserAddressPolicy
         //
     }
 
-    public isAuthorOf(User $currentUser, UserAddress $userAddress)
+    public function isOwnerOf(User $currentUser, UserAddress $userAddress)
     {
         return $currentUser->id === $userAddress->user_id;
     }

@@ -163,7 +163,9 @@
               // console.log(requestData)
               axios.post('{{ route('orders.store') }}', requestData).then((res) => {
                 console.log(res.response)
-                Swal.fire('订单提交成功', '', 'success')
+                Swal.fire('订单提交成功', '', 'success').then(() => {
+                  location.href = '/orders/' + res.data.id
+                })
               }).catch((err) => {
                 if(err.response.status === 422) {
                   // 表单验证错误

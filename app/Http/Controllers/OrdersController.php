@@ -13,6 +13,7 @@ use App\Jobs\CloseOrderJob;
 
 class OrdersController extends Controller
 {
+    // 创建订单
     public function store(OrderRequest $request)
     {
         $user = $request->user();
@@ -66,6 +67,7 @@ class OrdersController extends Controller
         return $order;
     }
 
+    // 我的订单列表
     public function index(Request $request)
     {
         $orders = Order::query()->with(['orderItems.product', 'orderItems.productSku'])
@@ -73,5 +75,12 @@ class OrdersController extends Controller
             ->orderBy('created_at', 'desc')
             ->paginate(5);
         return view('orders.index', ['orders' => $orders]);
+    }
+
+    // 订单详情
+    public function show(Order $order)
+    {
+        $this->authorize('isOwnerOf', $order);
+        return view('orders.show', ['order' => $order->load(['orderItems.product', 'orderItems.productSku'])]);
     }
 }

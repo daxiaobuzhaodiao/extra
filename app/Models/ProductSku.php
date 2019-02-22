@@ -19,7 +19,7 @@ class ProductSku extends Model
     	return $this->belongsTo('App\Models\Product');
     }
 
-    // 减库存
+    // 减库存 （生成订单)
     public function decreaseStock($amount)
     {
         if($amount < 0) {
@@ -29,7 +29,7 @@ class ProductSku extends Model
         // 两个 where 是并列关系
         return $this->newQuery()->where('id', $this->id)->where('stock', '>=', $amount)->decrement('stock', $amount);
     } 
-    // 加库存
+    // 加库存  (关闭未支付订单)
     public function addStock($amount)
     {
         if($amount < 0) {

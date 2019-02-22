@@ -9,6 +9,7 @@ use App\Models\Order;
 use App\Models\CartItem;
 use App\Models\ProductSku;
 use App\Exceptions\InvalidRequestException;
+use App\Jobs\CloseOrderJob;
 
 class OrdersController extends Controller
 {
@@ -61,6 +62,16 @@ class OrdersController extends Controller
             $user->cartItems()->whereIn('product_sku_id', $skuIds)->delete();
             return $order;
         });
+        $this->dispatch(new CloseOrderJob($order, config('app.order_ttl'))); // 加入队列
         return $order;
+    }
+
+    public function index(Request $request)
+    {
+        $orders = Order::query()->with(['orderItems.product', 'orderItems.productSku'])
+            ->where('user_id', $request->user()->id)
+            ->orderBy('created_at', 'desc')
+            ->paginate(5);
+        return view('orders.index', ['orders' => $orders]);
     }
 }

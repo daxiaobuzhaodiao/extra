@@ -7,7 +7,7 @@ use App\Http\Requests\AddCartRequest;
 use App\Models\CartItem;
 use App\Models\ProductSku;
 
-class CartItemsController extends Controller
+class CartsController extends Controller
 {
     // 增
     public function add(AddCartRequest $request)
@@ -16,7 +16,7 @@ class CartItemsController extends Controller
         $skuId = $request->input('sku_id');
         $amount = $request->input('amount');
         // 查询该商品是否已经存在 购物车 数据表中
-        if($cart = $user->cartItems()->where('product_sku_id', $skuId)->first()) {
+        if($cart = $user->carts()->where('product_sku_id', $skuId)->first()) {
             // 如果存在 则只数量叠加
             $cart->update([
                 'amount' => $amount + $cart->amount
@@ -36,16 +36,16 @@ class CartItemsController extends Controller
     public function index()
     {
         // with(['productSku.product']) 方法用来预加载购物车里的商品和 SKU 信息。通过 . 提前加载了与商品 SKU 关联的商品
-        $cartItems = auth()->user()->cartItems()->with(['productSku.product'])->get(); 
+        $carts = auth()->user()->carts()->with(['productSku.product'])->get(); 
         $addresses = auth()->user()->addresses()->orderBy('last_used_at', 'desc')->get();
         
-        return view('cartItems.index', ['cartItems' => $cartItems, 'addresses' => $addresses]);
+        return view('carts.index', ['carts' => $carts, 'addresses' => $addresses]);
     }
 
     // 删
     public function remove(ProductSku $productSku)
     {
-        auth()->user()->cartItems()->where('product_sku_id', $productSku->id)->delete();
+        auth()->user()->carts()->where('product_sku_id', $productSku->id)->delete();
         return [];
     }
 }

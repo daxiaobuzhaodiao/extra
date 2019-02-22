@@ -10,9 +10,9 @@ Route::group(['middleware' => ['auth', 'verified']], function () {
     Route::post('products/{product}/favor', 'ProductsController@favor')->name('products.favor');    // 点击收藏
     Route::delete('products/{product}/disfavor', 'ProductsController@disfavor')->name('products.disfavor'); // 取消收藏
     Route::get('products/favorites', 'ProductsController@favorites')->name('products.favorites');   // 收藏列表
-    Route::post('carts', 'CartItemsController@add')->name('carts.add'); // 添加购物车
-    Route::get('carts', 'CartItemsController@index')->name('carts.index');  // 购物车列表
-    Route::delete('carts/{productSku}', 'CartItemsController@remove')->name('carts.remove'); // 删除购物车
+    Route::post('carts', 'CartsController@add')->name('carts.add'); // 添加购物车
+    Route::get('carts', 'CartsController@index')->name('carts.index');  // 购物车列表
+    Route::delete('carts/{productSku}', 'CartsController@remove')->name('carts.remove'); // 删除购物车
     Route::post('orders', 'OrdersController@store')->name('orders.store');  // 创建订单
     Route::get('orders', 'OrdersController@index')->name('orders.index');   // 订单列表
     Route::get('orders/{order}', 'OrdersController@show')->name('orders.show'); // 订单详情

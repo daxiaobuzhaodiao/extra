@@ -3,7 +3,7 @@
 Auth::routes(['verify' => true]);
 
 Route::get('/', 'ProductsController@index')->name('products.index');
-
+Route::get('test', 'HomeController@index')->name('test'); // 各种调试
 
 Route::group(['middleware' => ['auth', 'verified']], function () {
     Route::resource('user_addresses', 'UserAddressesController');   // 收获地址
@@ -16,10 +16,12 @@ Route::group(['middleware' => ['auth', 'verified']], function () {
     Route::post('orders', 'OrdersController@store')->name('orders.store');  // 创建订单
     Route::get('orders', 'OrdersController@index')->name('orders.index');   // 订单列表
     Route::get('orders/{order}', 'OrdersController@show')->name('orders.show'); // 订单详情
+    Route::get('payment/{order}/alipay', 'PaymentController@payByAlipay')->name('payment.alipay'); // 支付宝支付
+    Route::get('payment/alipay/return', 'PaymentController@alipayReturn')->name('payment.alipay.return'); // 支付宝前端页面回掉
 });
 
+Route::post('payment/alipay/notify', 'PaymentController@alipayNotify')->name('payment.alipay.notify');    // 支付宝服务器回调
 Route::get('products/{product}', 'ProductsController@show')->name('products.show');
-
 
 
 

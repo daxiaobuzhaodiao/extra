@@ -164,7 +164,7 @@
               axios.post('{{ route('orders.store') }}', requestData).then((res) => {
                 console.log(res.response)
                 Swal.fire('订单提交成功', '', 'success').then(() => {
-                  // location.href = '/orders/' + res.data.id
+                  location.href = '/orders/' + res.data.id // 跳转到 订单详情页
                 })
               }).catch((err) => {
                 if(err.response.status === 422) {

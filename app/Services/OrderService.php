@@ -10,9 +10,10 @@ use App\Services\CartService;
 
 class OrderService
 {
+    // 注意： address 必须从控制器中传对象过来，如果传递一个 id 过来，不会被解析成对象
+    // 下面的 UserAddress $address 中的 UserAddress 可以省略不写，因为传递来的就是对象，不需要解析
     public function store(User $user, UserAddress $address, $remark, $items)
     {
-        
         // 开启数据库事物
         $order = \DB::transaction(function() use($user, $address, $remark, $items) {
             // 更新收获地址的 last_used_at 字段

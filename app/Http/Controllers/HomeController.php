@@ -9,6 +9,10 @@ class HomeController extends Controller
 
     public function index()
     {
-        return view('home');
+        return app('alipay')->web([
+            'out_trade_no' => time(),
+            'total_amount' => '1',
+            'subject' => 'test subject - 测试',
+        ]);
     }
 }

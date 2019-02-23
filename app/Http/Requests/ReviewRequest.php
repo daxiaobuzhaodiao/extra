@@ -1,0 +1,32 @@
+<?php
+
+namespace App\Http\Requests;
+
+use Illuminate\Validation\Rule;
+
+class ReviewRequest extends Request
+{
+
+    public function rules()
+    {
+        // $this->route('order')  ===  request()->order;  获取当前路由订单对象
+        // request()->reviews；
+        return [
+            'reviews' => 'required|array',
+            'reviews.*.id' => [
+                'required',
+                Rule::exists('order_items', 'id')->where('order_id', $this->route('order')->id)
+            ],
+            'reviews.*.rating' => 'required|integer|between:1,5',
+            'reviews.*.review' => 'required'
+        ];
+    }
+
+    public function attributes()
+    {
+        return [
+            'reviews.*.rating' => '评分',
+            'reviews.*.review' => '评价'
+        ];
+    }
+}

@@ -25,6 +25,10 @@ class EventServiceProvider extends ServiceProvider
         OrderPaid::class => [
             UpdateProductSoldCount::class,
             SendOrderPaidEmail::class
+        ],
+
+        \App\Events\OrderReviewed::class => [
+            \App\Listeners\UpdateProductRating::class
         ]
         
     ];

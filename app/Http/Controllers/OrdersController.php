@@ -7,6 +7,7 @@ use App\Http\Requests\OrderRequest;
 use App\Models\Order;
 use App\Services\OrderService;
 use App\Models\UserAddress;
+use App\Http\Requests\ReviewRequest;
 
 class OrdersController extends Controller
 {
@@ -54,5 +55,47 @@ class OrdersController extends Controller
         $order->update(['ship_status' => Order::SHIP_STATUS_RECEIVED]);
         // 返回原页面
         return $order;
+    }
+
+    // 返回某个订单下面的 sku 的评价内容
+    public function review(Order $order)
+    {
+        $this->authorize('isOwnerOf', $order);
+        // 判断订单是否 已支付
+        if(!$order->paid_at){
+            throw new \App\Exceptions\InvalidRequestException('该订单未支付，不可评价');
+        }
+        // 加载关系
+        $order->load(['orderItems.product', 'orderItems.productSku']);
+        return view('orders.review', compact('order'));
+    }
+    // 评价某个订单中 sku
+    public function sendReview(Order $order, ReviewRequest $request)
+    {
+        // 判断该订单是否 已支付
+        if(!$order->paid_at) {
+            throw new \App\Exceptions\InvalidRequestException('该订单未支付，不可评价');
+        }
+        // 判断该订单是否 已评价
+        if($order->reviewed) {
+            throw new \App\Exceptions\InvalidRequestException('该订单已评价，不可重新评价');
+        }
+        $reviews = $request->reviews;
+        // 开启事务
+        \DB::transaction(function() use($reviews, $order) {
+            foreach($reviews as $review) {
+                $orderItem = $order->orderItems()->findOrFail($review['id']);
+                $orderItem->update([
+                    'rating' => $review['rating'],
+                    'review' => $review['review'],
+                    'reviewed_at' => now()
+                ]);
+            }
+            // 标记订单为已评价
+            $order->update(['reviewed' => true]);
+            event(new \App\Events\OrderReviewed($order)); // 必须在事务中触发事件  更新订单 评分 和 评价数量
+        });
+
+        return redirect()->back();
     }
 }

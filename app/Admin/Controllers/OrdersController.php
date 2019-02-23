@@ -34,13 +34,16 @@ class OrdersController extends Controller
      * @param mixed $id
      * @param Content $content
      * @return Content
+     *   可以被解析成对象
      */
-    public function show($id, Content $content)
+    public function show(Order $order, Content $content)
     {
         return $content
-            ->header('Detail')
+            ->header('订单详情')
             ->description('description')
-            ->body($this->detail($id));
+            // ->body($this->detail($id));
+            // body 方法可以接受 Laravel 的视图作为参数
+            ->body(view('admin.orders.show', compact('order')));
     }
 
     /**
@@ -80,7 +83,7 @@ class OrdersController extends Controller
     protected function grid()
     {
         $grid = new Grid(new Order);
-
+        
         // 只展示已支付的订单， 并且默认按支付时间倒序排序
         $grid->model()->whereNotNull('paid_at')->orderBy('paid_at', 'desc');
         $grid->no('订单流水号');
@@ -135,7 +138,7 @@ class OrdersController extends Controller
         $show->id('Id');
         $show->no('No');
         $show->user_id('User id');
-        $show->address('Address');
+        // $show->address('Address');
         $show->total_amount('Total amount');
         $show->remark('Remark');
         $show->paid_at('Paid at');

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Exceptions\InvalidRequestException;
 use App\Models\Order;
+use App\Events\OrderPaid;
 
 class PaymentController extends Controller
 {
@@ -53,6 +54,9 @@ class PaymentController extends Controller
             'payment_method' => 'alipay',
             'payment_no' => $data->trade_no
         ]);
+        
+        // 触发事件处理程序 增加销量 和 给用发送订单邮件
+        event(new OrderPaid($order));
         return app('alipay')->success();
     }
 }

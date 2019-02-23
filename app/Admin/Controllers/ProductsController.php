@@ -83,8 +83,10 @@ class ProductsController extends Controller
 
         $grid->id('Id');
         $grid->title('商品名称');
-        $grid->description('商品描述');
-        $grid->image('商品主图');
+        $grid->description('商品描述')->display(function ($value) {
+            return str_limit($value, 10);
+        });
+        // $grid->image('商品主图');
         $grid->on_sale('上架')->display(function ($value) {
             return $value ? '是' : '否';
         });

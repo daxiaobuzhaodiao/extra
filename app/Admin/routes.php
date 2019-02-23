@@ -10,8 +10,9 @@ Route::group([
     'middleware'    => config('admin.route.middleware'),
 ], function (Router $router) {
 
-    $router->get('/', 'HomeController@index');
-   	$router->get('users', 'UsersController@index');
-   	$router->resource('products', 'ProductsController');
-
+    $router->get('/', 'HomeController@index');  // 欢迎页
+   	$router->get('users', 'UsersController@index')->name('admin.users.index'); // 用户列表
+    $router->resource('products', 'ProductsController');    // 商品列表
+    $router->get('orders', 'OrdersController@index')->name('admin.orders.index');   // 订单列表   
+    
 });

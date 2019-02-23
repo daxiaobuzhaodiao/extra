@@ -21,6 +21,7 @@ Route::group(['middleware' => ['auth', 'verified']], function () {
     Route::post('orders/{order}/received', 'OrdersController@received')->name('orders.received');   // 确认收获
     Route::get('orders/{order}/review', 'OrdersController@review')->name('orders.review.show'); // 显示某个订单的评价内容
     Route::post('orders/{order}/review', 'OrdersController@sendReview')->name('orders.review.store'); // 评价某个订单
+    Route::post('orders/{order}/apply_refund', 'OrdersController@applyRefund')->name('orders.apply_refund'); // 申请退款
 });
 
 Route::post('payment/alipay/notify', 'PaymentController@alipayNotify')->name('payment.alipay.notify');    // 支付宝服务器回调

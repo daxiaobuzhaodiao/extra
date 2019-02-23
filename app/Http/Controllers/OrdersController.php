@@ -8,6 +8,7 @@ use App\Models\Order;
 use App\Services\OrderService;
 use App\Models\UserAddress;
 use App\Http\Requests\ReviewRequest;
+use App\Http\Requests\ApplyRefundRequest;
 
 class OrdersController extends Controller
 {
@@ -97,5 +98,30 @@ class OrdersController extends Controller
         });
 
         return redirect()->back();
+    }
+
+    // 申请退款
+    public function applyRefund(Order $order, ApplyRefundRequest $request)
+    {
+        $this->authorize('isOwnerOf', $order);
+        // 订单是否 已支付
+        if(!$order->paid_at) {
+            throw new \App\Exceptions\InvalidRequestException('该订单未支付，不可退款');
+        }
+        // 判断订单退款状态是否正确
+        if($order->refund_status !== Order::REFUND_STATUS_PENDING) {
+            throw new \App\Exceptions\InvalidRequestException('该订单已经申请了退款，请勿重复申请');
+        }
+
+        // 将退款理由写入 extra 字段中
+        $extra = $order->extra ?: [];  // 为了时刻保证 extra 存的是一个数组（json）而且不会覆盖已经存在的数据
+        $extra['refund_reason'] = $request->reason;
+
+        // 将订单状态改为 已申请退款
+        $order->update([
+            'refund_status' => Order::REFUND_STATUS_APPLIED,
+            'extra' => $extra
+        ]);
+        return $order;
     }
 }

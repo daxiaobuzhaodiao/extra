@@ -58,38 +58,63 @@
                                 <div class="line-value">{{ $order->ship_data['express_company'] }} {{ $order->ship_data['express_no'] }}</div>
                             </div>
                             @endif
+                             <!-- 订单已支付，且退款状态不是未退款时展示 退款信息 -->
+                            @if($order->paid_at && $order->refund_status !== \App\Models\Order::REFUND_STATUS_PENDING)
+                                <div class="line">
+                                    <div class="line-label">退款状态：</div>
+                                    <div class="line-value">{{ \App\Models\Order::$refundStatusMap[$order->refund_status] }}</div>
+                                </div>
+                                <div class="line">
+                                    <div class="line-label">退款理由：</div>
+                                    <div class="line-value">{{ $order->extra['refund_reason'] }}</div>
+                                </div>
+                            @endif
                         </div>
                         <div class="order-summary text-right">
-                        <div class="total-amount">
-                            <span>订单总价：</span>
-                            <div class="value">￥{{ $order->total_amount }}</div>
-                        </div>
-                        <div>
-                            <span>订单状态：</span>
-                            <div class="value">
-                            @if($order->paid_at)
-                                @if($order->refund_status === \App\Models\Order::REFUND_STATUS_PENDING)
-                                已支付
-                                @else
-                                {{ \App\Models\Order::$refundStatusMap[$order->refund_status] }}
-                                @endif
-                            @elseif($order->closed)
-                                已关闭
-                            @else
-                                未支付
-                            @endif
-                            <!-- 如果订单的发货状态为已发货则展示确认收货按钮 -->
-                            @if($order->ship_status === \App\Models\Order::SHIP_STATUS_DELIVERED)
-                            <div class="receive-button">
-                                <button type="button" id="btn-receive" class="btn btn-sm btn-success">确认收货</button>
+                            <div class="total-amount">
+                                <span>订单总价：</span>
+                                <div class="value">￥{{ $order->total_amount }}</div>
+                            </div>
+                            <div>
+                                <span>订单状态：</span>
+                                <div class="value">
+                                    @if($order->paid_at)
+                                        @if($order->refund_status === \App\Models\Order::REFUND_STATUS_PENDING)
+                                        已支付
+                                        @else
+                                        {{ \App\Models\Order::$refundStatusMap[$order->refund_status] }}
+                                        @endif
+                                    @elseif($order->closed)
+                                        已关闭
+                                    @else
+                                        未支付
+                                    @endif
+                                    <!-- 如果订单的发货状态为已发货则展示确认收货按钮 -->
+                                    @if($order->ship_status === \App\Models\Order::SHIP_STATUS_DELIVERED)
+                                        <div class="receive-button">
+                                            <button type="button" id="btn-receive" class="btn btn-sm btn-success">确认收货</button>
+                                        </div>
+                                    @endif
+                                   
+                                </div>
+                            </div>
+                            <!-- 如果退款申请被拒绝 -->
+                            @if(isset($order->extra['refund_disagree_reason']))
+                            <div>
+                                <span>拒绝退款理由：</span>
+                                <div class="value">{{ $order->extra['refund_disagree_reason'] }}</div>
                             </div>
                             @endif
-                            </div>
-                        </div>
+                             <!-- 订单已支付，且退款状态是未退款时展示申请退款按钮 -->
+                            @if($order->paid_at && $order->refund_status === \App\Models\Order::REFUND_STATUS_PENDING)
+                                <div class="refund-button">
+                                    <button class="btn btn-sm btn-danger" id="btn-apply-refund">申请退款</button>
+                                </div>
+                            @endif
                             <!-- 支付按钮开始 -->
                             @if(!$order->paid_at && !$order->closed)
                                 <div class="payment-buttons">
-                                <a class="btn btn-primary btn-sm" href="{{ route('payment.alipay', ['order' => $order->id]) }}">支付宝支付</a>
+                                    <a class="btn btn-primary btn-sm" href="{{ route('payment.alipay', ['order' => $order->id]) }}">支付宝支付</a>
                                 </div>
                             @endif
                         </div>
@@ -103,15 +128,16 @@
 @section('customJS')
     <script>
         $(document).ready(function() {
+            // 确认收货
             $('#btn-receive').click(function() {
                 Swal.fire({
-                title: '确认收获？',
-                type: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#3085d6',
-                cancelButtonColor: '#d33',
-                confirmButtonText: '确定',
-                cancelButtonText: '取消'
+                    title: '确认收获？',
+                    type: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: '确定',
+                    cancelButtonText: '取消'
                 }).then((result) => {
                     if (result.value) {
                         axios.post('{{ route('orders.received', $order->id) }}').then((res) => {
@@ -125,6 +151,38 @@
                     }else{
                         // 点击了取消
                     }
+                })
+            })
+
+            // 申请退款
+            $('#btn-apply-refund').click(function() {
+                Swal.fire({
+                    title: '请输入退款理由',
+                    input: 'text',
+                    inputAttributes: {
+                        autocapitalize: 'off'
+                    },
+                    showCancelButton: true,
+                    confirmButtonText: '确定',
+                    cancelButtonText: '取消',
+                    showLoaderOnConfirm: true,
+                    preConfirm: (data) => {
+                        // data 就是input的值
+                        axios.post('{{ route('orders.apply_refund', $order->id) }}', {reason: data})
+                        .then((res)=>{
+                            // 请求成功
+                            Swal.fire('申请成功', '', 'success').then(()=>{
+                                location.reload()
+                            })
+                        }).catch((err)=>{
+                            // 请求失败
+                            console.log(err.response)
+                            Swal.fire(err.response.data.errors.reason[0], '', 'error')
+                        })
+                    }
+                }).then(()=>{
+                    // 取消了
+                    // alert(22);
                 })
             })
         })

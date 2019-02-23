@@ -85,7 +85,67 @@
                     </tr>
                 @endif
                 <!-- 订单发货结束 -->
+                @if($order->refund_status !== \App\Models\Order::REFUND_STATUS_PENDING)
+                    <tr>
+                        <td>退款状态：</td>
+                        <td colspan="2">{{ \App\Models\Order::$refundStatusMap[$order->refund_status] }}，理由：{{ $order->extra['refund_reason'] }}</td>
+                        <td>
+                            <!-- 如果订单退款状态是已申请，则展示处理按钮 -->
+                            @if($order->refund_status === \App\Models\Order::REFUND_STATUS_APPLIED)
+                            <button class="btn btn-sm btn-success" id="btn-refund-agree">同意</button>
+                            <button class="btn btn-sm btn-danger" id="btn-refund-disagree">不同意</button>
+                            @endif
+                        </td>
+                    </tr>
+                @endif
             </tbody>
         </table>
     </div>
 </div>
+
+<script>
+$(document).ready(function() {
+    $('#btn-refund-disagree').click(function() {
+        // sweetalert 和前端页面的版本一样的
+        Swal.fire({
+            title: '请输入拒绝理由',
+            input: 'text',
+            inputAttributes: {
+                autocapitalize: 'off'
+            },
+            showCancelButton: true,
+            confirmButtonText: '确定',
+            cancelButtonText: '取消',
+            showLoaderOnConfirm: true,
+            preConfirm: (value) => {
+                if(!value) {
+                    Swal.fire('理由不能为空', '', 'error')
+                    return false
+                }
+                // lara-admin 没有 axios 所以使用 jquery 的 ajax 请求
+                return $.ajax({
+                    url: '{{ route('admin.orders.handle_refund', $order->id) }}',
+                    type: 'POST',
+                    data: JSON.stringify({
+                        agree: false,
+                        reason: value,
+                        _token: LA.token    // Laravel-Admin 页面里可以通过 LA.token 获得 CSRF Token
+                    }),
+                    contentType: 'application/json'
+                })
+            },
+            allowOutsideClick: false
+        }).then((res) => {
+            // console.log(res)
+            // 用户点击了弹框的取消按钮
+            if(res.dismiss === 'cancel') {
+                return
+            }
+            // 用户点击了
+            Swal.fire('操作成功', '', 'success').then(() => {
+                location.reload()
+            })
+        })
+    })
+})
+</script>

@@ -2,6 +2,7 @@
 
 namespace App\Admin\Controllers;
 
+use Illuminate\Http\Request;
 use App\Models\Order;
 use App\Http\Controllers\Controller;
 use Encore\Admin\Controllers\HasResourceActions;
@@ -10,7 +11,7 @@ use Encore\Admin\Grid;
 use Encore\Admin\Layout\Content;
 use Encore\Admin\Show;
 
-class OrdersController extends Controller
+class OrdersController extends Controller   // 同样继承的 controller 类
 {
     use HasResourceActions;
 
@@ -61,19 +62,6 @@ class OrdersController extends Controller
             ->body($this->form()->edit($id));
     }
 
-    /**
-     * Create interface.
-     *
-     * @param Content $content
-     * @return Content
-     */
-    public function create(Content $content)
-    {
-        return $content
-            ->header('Create')
-            ->description('description')
-            ->body($this->form());
-    }
 
     /**
      * Make a grid builder.
@@ -110,51 +98,7 @@ class OrdersController extends Controller
                 $batch->disableDelete();
             });
         });
-        // $grid->address('收获地址');
-        // $grid->remark('备注');
-        // $grid->payment_method('支付方式');
-        // $grid->payment_no('支付单号');
-        // $grid->refund_no('退款单号');
-        // $grid->closed('订单状态');
-        // $grid->reviewed('Reviewed');
-        // $grid->ship_data('Ship data');
-        // $grid->extra('Extra');
-        // $grid->created_at('Created at');
-        // $grid->updated_at('Updated at');
-
         return $grid;
-    }
-
-    /**
-     * Make a show builder.
-     *
-     * @param mixed $id
-     * @return Show
-     */
-    protected function detail($id)
-    {
-        $show = new Show(Order::findOrFail($id));
-
-        $show->id('Id');
-        $show->no('No');
-        $show->user_id('User id');
-        // $show->address('Address');
-        $show->total_amount('Total amount');
-        $show->remark('Remark');
-        $show->paid_at('Paid at');
-        $show->payment_method('Payment method');
-        $show->payment_no('Payment no');
-        $show->refund_status('Refund status');
-        $show->refund_no('Refund no');
-        $show->closed('Closed');
-        $show->reviewed('Reviewed');
-        $show->ship_status('Ship status');
-        $show->ship_data('Ship data');
-        $show->extra('Extra');
-        $show->created_at('Created at');
-        $show->updated_at('Updated at');
-
-        return $show;
     }
 
     /**
@@ -183,5 +127,33 @@ class OrdersController extends Controller
         $form->textarea('extra', 'Extra');
 
         return $form;
+    }
+
+    // 点击发货 接口
+    public function ship(Order $order, Request $request)
+    {
+        // 判断订单是否已经支付
+        if(!$order->paid_at){
+            throw new \App\Exceptions\InvalidRequestException('该订单未付款，不能发货');
+        }
+        // 判断该订单的发货状态是否是 未发货
+        if($order->ship_status !== Order::SHIP_STATUS_PENDING) {
+            throw new \App\Exceptions\InvalidRequestException('该订单已发货成功');
+        }
+        // 表单验证   laravel 5.5 之后 可以返回表单验证的结果
+        $data = $this->validate($request, [
+            'express_company' => 'required',
+            'express_no' => 'required',
+        ], [], [
+            'express_company' => '物流公司',
+            'express_no' => '物流单号',
+        ]);
+        // 更改订单物流状态为 已发货
+        $order->update([
+            'ship_status' => Order::SHIP_STATUS_DELIVERED,
+            'ship_data' => $data,  // $casts = ['ship_data' => 'json']
+        ]);
+        // 返回上一页
+        return redirect()->back();
     }
 }

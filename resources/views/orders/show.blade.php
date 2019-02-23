@@ -46,6 +46,18 @@
                             <div class="line"><div class="line-label">收货地址：</div><div class="line-value">{{ join(' ', $order->address) }}</div></div>
                             <div class="line"><div class="line-label">订单备注：</div><div class="line-value">{{ $order->remark ?: '-' }}</div></div>
                             <div class="line"><div class="line-label">订单编号：</div><div class="line-value">{{ $order->no }}</div></div>
+                             <!-- 输出物流状态 -->
+                            <div class="line">
+                                <div class="line-label">物流状态：</div>
+                                <div class="line-value">{{ \App\Models\Order::$shipStatusMap[$order->ship_status] }}</div>
+                            </div>
+                            <!-- 如果有物流信息则展示 -->
+                            @if($order->ship_data)
+                            <div class="line">
+                                <div class="line-label">物流信息：</div>
+                                <div class="line-value">{{ $order->ship_data['express_company'] }} {{ $order->ship_data['express_no'] }}</div>
+                            </div>
+                            @endif
                         </div>
                         <div class="order-summary text-right">
                         <div class="total-amount">
@@ -66,6 +78,12 @@
                             @else
                                 未支付
                             @endif
+                            <!-- 如果订单的发货状态为已发货则展示确认收货按钮 -->
+                            @if($order->ship_status === \App\Models\Order::SHIP_STATUS_DELIVERED)
+                            <div class="receive-button">
+                                <button type="button" id="btn-receive" class="btn btn-sm btn-success">确认收货</button>
+                            </div>
+                            @endif
                             </div>
                         </div>
                             <!-- 支付按钮开始 -->
@@ -80,4 +98,35 @@
             </div>
         </div>
     </div>
+@endsection
+
+@section('customJS')
+    <script>
+        $(document).ready(function() {
+            $('#btn-receive').click(function() {
+                Swal.fire({
+                title: '确认收获？',
+                type: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: '确定',
+                cancelButtonText: '取消'
+                }).then((result) => {
+                    if (result.value) {
+                        axios.post('{{ route('orders.received', $order->id) }}').then((res) => {
+                            Swal.fire('操作成功', '', 'success').then(() => {
+                                location.reload()
+                            })
+                        }).catch((err) => {
+                            console.log(err.response)
+                        })
+                        
+                    }else{
+                        // 点击了取消
+                    }
+                })
+            })
+        })
+    </script>
 @endsection

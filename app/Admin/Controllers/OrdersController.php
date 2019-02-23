@@ -140,7 +140,7 @@ class OrdersController extends Controller   // 同样继承的 controller 类
         if($order->ship_status !== Order::SHIP_STATUS_PENDING) {
             throw new \App\Exceptions\InvalidRequestException('该订单已发货成功');
         }
-        // 表单验证   laravel 5.5 之后 可以返回表单验证的结果
+        // 表单验证   laravel 5.5 之后 通过表单验证后返回表单提交的 键值 数组
         $data = $this->validate($request, [
             'express_company' => 'required',
             'express_no' => 'required',

@@ -18,6 +18,7 @@ Route::group(['middleware' => ['auth', 'verified']], function () {
     Route::get('orders/{order}', 'OrdersController@show')->name('orders.show'); // 订单详情
     Route::get('payment/{order}/alipay', 'PaymentController@payByAlipay')->name('payment.alipay'); // 支付宝支付
     Route::get('payment/alipay/return', 'PaymentController@alipayReturn')->name('payment.alipay.return'); // 支付宝前端页面回掉
+    Route::post('orders/{order}/received', 'OrdersController@received')->name('orders.received');   // 确认收获
 });
 
 Route::post('payment/alipay/notify', 'PaymentController@alipayNotify')->name('payment.alipay.notify');    // 支付宝服务器回调

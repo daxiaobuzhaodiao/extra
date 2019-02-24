@@ -92,6 +92,11 @@ class Order extends Model
     {
         return $this->hasMany('App\Models\OrderItem');
     }
+    // 关联 CouponCode 模型
+    public function couponCode()
+    {
+        return $this->belongsTo('App\Models\CouponCode');
+    }
 
     // 创建唯一退款单号
     public static function getAvailableRefundNo()

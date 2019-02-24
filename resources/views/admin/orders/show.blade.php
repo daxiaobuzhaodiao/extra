@@ -48,6 +48,7 @@
                 <!-- 订单发货 -->
                 <!-- 如果订单未发货，展示发货表单 -->
                 @if($order->ship_status === \App\Models\Order::SHIP_STATUS_PENDING)
+                    @if($order->refund_status !== \App\Models\Order::REFUND_STATUS_SUCCESS)
                     <tr>
                         <td colspan="4">
                         <form action="{{ route('admin.orders.ship', [$order->id]) }}" method="post" class="form-inline">
@@ -75,6 +76,7 @@
                         </form>
                         </td>
                     </tr>
+                    @endif
                 @else
                 <!-- 否则展示物流公司和物流单号 -->
                     <tr>
@@ -105,6 +107,8 @@
 
 <script>
 $(document).ready(function() {
+
+    // 拒绝退款
     $('#btn-refund-disagree').click(function() {
         // sweetalert 和前端页面的版本一样的
         Swal.fire({
@@ -145,6 +149,40 @@ $(document).ready(function() {
             Swal.fire('操作成功', '', 'success').then(() => {
                 location.reload()
             })
+        })
+    })
+
+    // 同意退款
+    $('#btn-refund-agree').click(function() {
+        Swal.fire({
+            title: '确定同意退款？',
+            // text: "You won't be able to revert this!",
+            type: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: '确定',
+            cancelButtonText: '取消'
+        }).then((result) => {
+            if (result.value) {
+                // 点了确定按钮
+                $.ajax({
+                    url: '{{ route('admin.orders.handle_refund', $order->id) }}',
+                    type: 'POST',
+                    data: JSON.stringify({
+                        agree: true,
+                        _token: LA.token
+                    }),
+                    contentType: 'application/json'
+                }).then(() => {
+                    Swal('退款成功', '', 'success').then(() => {
+                        location.reload()
+                    })
+                    
+                })
+            }else {
+                // 点击了取消按钮
+            }
         })
     })
 })

@@ -73,8 +73,33 @@ class OrdersController extends Controller   // 同样继承的 controller 类
     {
         $grid = new Grid(new Order);
         
+        $grid->filter(function($filter){
+            // 去掉默认的id过滤器
+            $filter->disableIdFilter();
+            // 在这里添加字段过滤器
+            $filter->column(1/2, function ($filter) {
+                $filter->like('no', '订单号');
+                $filter->equal('refund_status', '退款状态')->select([
+                    'success' => '成功',
+                    'applied' => '退款中',
+                    'failed' => '失败'
+                ]);
+            });
+            $filter->column(1/2, function ($filter) {
+                $filter->like('no', '订单号');
+                $filter->equal('refund_status', '退款状态')->select([
+                    'success' => '成功',
+                    'applied' => '退款中',
+                    'failed' => '失败'
+                ]);
+            });
+
+        });
         // 只展示已支付的订单， 并且默认按支付时间倒序排序
         $grid->model()->whereNotNull('paid_at')->orderBy('paid_at', 'desc');
+
+        
+        
         $grid->no('订单流水号');
         // 展示关联关系的字段时， 使用 column 方法
         $grid->column('user.name', '买家');
@@ -100,34 +125,6 @@ class OrdersController extends Controller   // 同样继承的 controller 类
             });
         });
         return $grid;
-    }
-
-    /**
-     * Make a form builder.
-     *
-     * @return Form
-     */
-    protected function form()
-    {
-        $form = new Form(new Order);
-
-        $form->text('no', 'No');
-        $form->number('user_id', 'User id');
-        $form->textarea('address', 'Address');
-        $form->decimal('total_amount', 'Total amount');
-        $form->textarea('remark', 'Remark');
-        $form->datetime('paid_at', 'Paid at')->default(date('Y-m-d H:i:s'));
-        $form->text('payment_method', 'Payment method');
-        $form->text('payment_no', 'Payment no');
-        $form->text('refund_status', 'Refund status')->default('pending');
-        $form->text('refund_no', 'Refund no');
-        $form->switch('closed', 'Closed');
-        $form->switch('reviewed', 'Reviewed');
-        $form->text('ship_status', 'Ship status')->default('pending');
-        $form->textarea('ship_data', 'Ship data');
-        $form->textarea('extra', 'Extra');
-
-        return $form;
     }
 
     // 点击发货 接口

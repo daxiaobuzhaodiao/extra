@@ -38,16 +38,21 @@ class CouponCode extends Model
     }
 
     // 加一个临时字段   获取这个 description 这个属性的时候会返回 下边方法返回的值  下面的属性和方法是成对出现的
-    protected $appends = ['description'];
+    protected $appends = ['description', 'usag'];
     public function getDescriptionAttribute()
     {
         $str = '';
         if($this->min_amount > 0) {
-            $str = '满'.$this->min_amount;
+            $str = '满'.str_replace('.00', '', $this->min_amount);
         }
         if($this->type === self::TYPE_PERCENT) {
-            return $str.'优惠'.$this->value.'%';
+            return $str.'优惠'.str_replace('.00', '', $this->value).'%';
         }
-        return $str.'减'.$this->value;
+        return $str.'减'.str_replace('.00', '', $this->value);
+    }
+
+    public function getUsagAttribute()
+    {
+        return $this->used.' / '.$this->total;
     }
 }

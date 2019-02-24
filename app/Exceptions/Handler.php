@@ -3,6 +3,7 @@
 namespace App\Exceptions;
 
 use Exception;
+use App\Exceptions\CouponCodeUnavailableException;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
 
 class Handler extends ExceptionHandler
@@ -14,6 +15,7 @@ class Handler extends ExceptionHandler
      */
     protected $dontReport = [
         InvalidRequestException::class,
+        CouponCodeUnavailableException::class
     ];
 
     /**

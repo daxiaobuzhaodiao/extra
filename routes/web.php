@@ -22,6 +22,7 @@ Route::group(['middleware' => ['auth', 'verified']], function () {
     Route::get('orders/{order}/review', 'OrdersController@review')->name('orders.review.show'); // 显示某个订单的评价内容
     Route::post('orders/{order}/review', 'OrdersController@sendReview')->name('orders.review.store'); // 评价某个订单
     Route::post('orders/{order}/apply_refund', 'OrdersController@applyRefund')->name('orders.apply_refund'); // 申请退款
+    Route::get('coupons/{code}', 'CouponCodesController@show')->name('coupons.show');  // 检测优惠区是否有效
 });
 
 Route::post('payment/alipay/notify', 'PaymentController@alipayNotify')->name('payment.alipay.notify');    // 支付宝服务器回调

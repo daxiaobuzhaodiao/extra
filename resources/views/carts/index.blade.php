@@ -59,7 +59,7 @@
       @endforeach
       </tbody>
     </table>
-    <!-- 地址选择框 和 备注框 开始 -->
+    <!-- 地址选择框 / 备注框 / 优惠券检查 开始 -->
     <div>
       <form class="form-horizontal" role="form" id="order-form">
         <div class="form-group row">
@@ -72,12 +72,26 @@
             </select>
           </div>
         </div>
+        <!-- 订单备注 -->
         <div class="form-group row">
           <label class="col-form-label col-sm-3 text-md-right">备注</label>
           <div class="col-sm-9 col-md-7">
             <textarea name="remark" class="form-control" rows="3"></textarea>
           </div>
         </div>
+        <!-- 优惠码 开始 -->
+        <div class="form-group row">
+          <label class="col-form-label col-sm-3 text-md-right">优惠码</label>
+          <div class="col-sm-4">
+            <input type="text" class="form-control" name="coupon_code">
+            <span class="form-text text-muted" id="coupon_desc"></span>
+          </div>
+          <div class="col-sm-3">
+            <button type="button" class="btn btn-success" id="btn-check-coupon">检查</button>
+            <button type="button" class="btn btn-danger" style="display: none;" id="btn-cancel-coupon">取消</button>
+          </div>
+        </div>
+        <!-- 优惠码结束 -->
         <div class="form-group">
           <div class="offset-sm-3 col-sm-3">
             <button type="button" class="btn btn-primary btn-create-order">提交订单</button>
@@ -85,7 +99,7 @@
         </div>
       </form>
     </div>
-    <!-- 地址选择框 和 备注框 结束 -->
+    <!-- 地址选择框 / 备注框 / 检查优惠券 结束 -->
   </div>
 </div>
 </div>
@@ -139,7 +153,8 @@
               var requestData = {
                 address_id: $('select[name=address]').val(),
                 items: [],
-                remark: $('textarea[name=remark]').val()
+                remark: $('textarea[name=remark]').val(),
+                coupon_code: $('input[name=coupon_code]').val() // 从优惠 input 中获取 优惠吗1
               }
               // 遍历 <table> 标签内所有带有 data-id 属性的 <tr> 标签，也就是每一个购物车中的商品 SKU
               $('table tr[data-id]').each(function() {
@@ -183,6 +198,42 @@
                   Swal.fire('未知错误', '', 'error')
                 }
               })
+            })
+
+            // 检查优惠券是否有效
+            $('#btn-check-coupon').click(function() {
+              // 获取填入的券码
+              var code = $('input[name=coupon_code]').val()
+              if(!code) {
+                Swal.fire('请输入优惠券','', 'warning')
+                return
+              }
+              // 调用检查接口
+              axios.get('/coupons/' + encodeURIComponent(code))
+                .then((res) => {
+                  // console.log(res.data.record.code)
+                  $('#coupon_desc').text(res.data.record.description)
+                  $('input[name=coupon_code]').prop('readonly', true)
+                  $('#btn-check-coupon').hide()
+                  $('#btn-cancel-coupon').show()
+                })
+                .catch((err) => {
+                  if(err.response.status === 404){
+                    Swal.fire('该券不存在', '', 'error')
+                  }else if(err.response.status === 403){
+                    Swal.fire(err.response.data.msg, '', 'error')
+                  }else {
+                    Swal.fire('服务器错误,请联系客服', '', 'error')
+                  }
+                })
+            })
+
+            // 取消使用优惠券
+            $('#btn-cancel-coupon').click(function() {
+              $('#coupon_desc').text('')
+              $('input[name=coupon_code]').prop('readonly', false)
+              $('#btn-cancel-coupon').hide()
+              $('#btn-check-coupon').show()
             })
         })
     </script>

@@ -1,21 +1,27 @@
 <?php
 namespace App\Services;
 
-use App\Models\ProductSku;
-use App\Models\UserAddress;
-use App\Exceptions\InvalidRequestException;
-use App\Jobs\CloseOrderJob;
 use App\Models\User;
+use App\Models\CouponCode;
+use App\Models\ProductSku;
+use App\Jobs\CloseOrderJob;
+use App\Models\UserAddress;
 use App\Services\CartService;
+use App\Exceptions\InvalidRequestException;
+use App\Exceptions\CouponCodeUnavailableException;
 
 class OrderService
 {
     // 注意： address 必须从控制器中传对象过来，如果传递一个 id 过来，不会被解析成对象
     // 下面的 UserAddress $address 中的 UserAddress 可以省略不写，因为传递来的就是对象，不需要解析
-    public function store(User $user, UserAddress $address, $remark, $items)
+    public function store(User $user, UserAddress $address, $remark, $items, CouponCode $coupon = null)
     {
+        // 如果传入了优惠券，则先检查是否可用
+        if($coupon) {
+            $coupon->checkAvailable();
+        }
         // 开启数据库事物
-        $order = \DB::transaction(function() use($user, $address, $remark, $items) {
+        $order = \DB::transaction(function() use($user, $address, $remark, $items, $coupon) {
             // 更新收获地址的 last_used_at 字段
             $address->update(['last_used_at' => now()]);
             
@@ -48,6 +54,18 @@ class OrderService
                 // 减库存
                 if($productSku->decreaseStock($item['amount']) < 0) {
                     throw new InvalidRequestException('该商品库存不足');
+                }
+            }
+            if ($coupon) {
+                // 总金额已经计算出来了，检查是否符合优惠券规则 （是否高于最低金额）
+                $coupon->checkAvailable($totalAmount);
+                // 把订单金额修改为优惠后的金额
+                $totalAmount = $coupon->getAdjustedPrice($totalAmount);
+                // 将订单与优惠券关联
+                $order->couponCode()->associate($coupon);
+                // 增加优惠券的用量，需判断返回值
+                if ($coupon->changeUsed() <= 0) {
+                    throw new CouponCodeUnavailableException('该优惠券已被兑完');
                 }
             }
             // 更新订单总金额

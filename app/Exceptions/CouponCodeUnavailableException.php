@@ -21,7 +21,7 @@ class CouponCodeUnavailableException extends Exception
         }
 
         // 返回上一页并带上错误信息
-        return redirect()->back()->withErrors(['coupon_code', $message]);
+        return redirect()->back()->withErrors(['coupon_code' => $this->message]);
     }
     
 }

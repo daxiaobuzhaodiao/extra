@@ -26,6 +26,7 @@ class OrdersController extends Controller
         $items = $request->items;
         $address = UserAddress::findOrFail($request->address_id);
         $remark = $request->remark;
+        $coupon = null;
         // 检测优惠券
         if($code = $request->coupon_code){
             $coupon = CouponCode::where('code', $code)->first();

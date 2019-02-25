@@ -2,12 +2,13 @@
 
 namespace App\Jobs;
 
+use App\Models\Order;
+use App\Models\CouponCode;
 use Illuminate\Bus\Queueable;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
-use App\Models\Order;
 
 class CloseOrderJob implements ShouldQueue
 {
@@ -35,6 +36,9 @@ class CloseOrderJob implements ShouldQueue
             // 循环遍历此订单中的 sku 得到购买数量，将这些数量恢复到 sku 的库存中
             foreach($this->order->orderItems as $orderItem) {
                 $orderItem->productSku->addStock($orderItem->amount);
+            }
+            if($this->order->coupon_code_id){
+                $this->order->couponCode->changeUsed(true);
             }
         });
     }

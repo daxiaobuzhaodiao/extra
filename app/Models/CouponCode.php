@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\User;
 use Illuminate\Support\Str;
 use Illuminate\Database\Eloquent\Model;
 use App\Exceptions\CouponCodeUnavailableException;
@@ -37,8 +38,8 @@ class CouponCode extends Model
         }while(self::query()->where('code', $code)->exists());
         return $code;
     }
-    // 检查优惠券的有效性
-    public function checkAvailable($orderAmount = null)
+    // 检查优惠券的有效性  同时判断每个用户只能使用一次 所以传入当前订单的 user
+    public function checkAvailable(User $user, $orderAmount = null)
     {
         if (!$this->enabled) {
             throw new CouponCodeUnavailableException('优惠券不存在');
@@ -60,6 +61,31 @@ class CouponCode extends Model
         if (!is_null($orderAmount) && $orderAmount < $this->min_amount) {
             throw new CouponCodeUnavailableException('订单金额不满足该优惠券最低金额');
         }
+
+        /**
+         * 如果返回true 表示已经用了券了
+         * 未付款且未关闭的订单 或者 已付款且未退款成功的订单中如果出现了
+         *      select * from orders where user_id = xx and coupon_code_id = xx
+         *         and (
+         *                   ( paid_at is null and closed = 0 )
+         *                or ( paid_at is not null and refund_status != 'success' )
+         *             )
+         */
+        $used = Order::where('user_id', $user->id)
+            ->where('coupon_code_id', $this->id)
+            ->where(function($query) {
+                $query->where(function($query) {
+                    $query->whereNull('paid_at')
+                        ->where('closed', false);
+                })->orWhere(function($query) {
+                    $query->whereNotNull('paid_at')
+                        ->where('refund_status', Order::REFUND_STATUS_SUCCESS);
+                });
+            })->exists();
+        // 抛出异常
+        if($used) {
+            throw new CouponCodeUnavailableException('您已经使用过这张优惠券了');
+        }
     }
     // 获取 券后 订单的价格
     public function getAdjustedPrice($orderAmount)
@@ -72,7 +98,7 @@ class CouponCode extends Model
 
         return number_format($orderAmount * (100 - $this->value) / 100, 2, '.', '');
     }
-    // 优惠券用量变更
+    // 优惠券用量变更  传入 true 表示自增 1
     public function changeUsed($increase = true)
     {
         // 传入 true 代表新增用量，否则是减少用量

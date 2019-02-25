@@ -193,6 +193,9 @@
                   html += '</div>'
                   // 将错误信息输出到弹框
                   Swal.fire(html, '', 'error')
+                }else if(err.response.status === 403){
+                  console.log(err.response.data)
+                  Swal.fire(err.response.data.msg, '', 'error')
                 }else{
                   console.log(err.response)
                   Swal.fire('未知错误', '', 'error')
@@ -232,6 +235,7 @@
             $('#btn-cancel-coupon').click(function() {
               $('#coupon_desc').text('')
               $('input[name=coupon_code]').prop('readonly', false)
+              $('input[name=coupon_code]').val('')
               $('#btn-cancel-coupon').hide()
               $('#btn-check-coupon').show()
             })

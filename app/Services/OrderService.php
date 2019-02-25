@@ -14,11 +14,11 @@ class OrderService
 {
     // 注意： address 必须从控制器中传对象过来，如果传递一个 id 过来，不会被解析成对象
     // 下面的 UserAddress $address 中的 UserAddress 可以省略不写，因为传递来的就是对象，不需要解析
-    public function store(User $user, UserAddress $address, $remark, $items, CouponCode $coupon = null)
+    public function store(User $user, UserAddress $address, $remark, $items, $coupon = null)
     {
         // 如果传入了优惠券，则先检查是否可用
         if($coupon) {
-            $coupon->checkAvailable();
+            $coupon->checkAvailable($user);
         }
         // 开启数据库事物
         $order = \DB::transaction(function() use($user, $address, $remark, $items, $coupon) {
@@ -58,7 +58,7 @@ class OrderService
             }
             if ($coupon) {
                 // 总金额已经计算出来了，检查是否符合优惠券规则 （是否高于最低金额）
-                $coupon->checkAvailable($totalAmount);
+                $coupon->checkAvailable($user, $totalAmount);
                 // 把订单金额修改为优惠后的金额
                 $totalAmount = $coupon->getAdjustedPrice($totalAmount);
                 // 将订单与优惠券关联

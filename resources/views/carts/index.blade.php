@@ -5,7 +5,7 @@
 <div class="row">
 <div class="col-lg-10 offset-lg-1">
 <div class="card">
-  <div class="card-header">我的购物车</div>
+  <div class="card-header bg-transparent">我的购物车</div>
   <div class="card-body">
     <table class="table table-striped">
       <thead>

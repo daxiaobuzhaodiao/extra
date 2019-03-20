@@ -5,7 +5,7 @@
 <div class="row">
 <div class="col-lg-10 offset-lg-1">
 <div class="card">
-  <div class="card-header">
+  <div class="card-header bg-transparent">
     商品评价
     <a class="float-right" href="{{ route('orders.index') }}">返回订单列表</a>
   </div>

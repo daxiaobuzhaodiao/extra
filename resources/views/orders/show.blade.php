@@ -6,7 +6,7 @@
     <div class="row">
         <div class="col-lg-10 offset-lg-1">
             <div class="card">
-                <div class="card-header">
+                <div class="card-header bg-transparent">
                     <h4>订单详情</h4>
                 </div>
                 <div class="card-body">

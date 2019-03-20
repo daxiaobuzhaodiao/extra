@@ -5,7 +5,7 @@
 <div class="row">
 <div class="col-md-10 offset-lg-1">
 <div class="card">
-  <div class="card-header">
+  <div class="card-header bg-transparent">
     <h2 class="text-center">
     {{ $address->id ? '编辑' : '新增' }}收获地址
     </h2>

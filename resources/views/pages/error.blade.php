@@ -3,7 +3,7 @@
 
 @section('content')
 <div class="card">
-    <div class="card-header">错误</div>
+    <div class="card-header bg-transparent">错误</div>
     <div class="card-body text-center">
         <h1>{{ $msg }}</h1>
         <a class="btn btn-primary" href="{{ route('products.index') }}">返回首页</a>

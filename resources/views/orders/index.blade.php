@@ -6,13 +6,13 @@
 <div class="row">
     <div class="col-lg-10 offset-lg-1">
         <div class="card">
-            <div class="card-header">订单列表</div>
+            <div class="card-header bg-transparent">订单列表</div>
             <div class="card-body">
             <ul class="list-group">
                 @foreach($orders as $order)
                 <li class="list-group-item">
                     <div class="card">
-                    <div class="card-header">
+                    <div class="card-header bg-transparent">
                         订单号：{{ $order->no }}
                         <span class="float-right">{{ $order->created_at->format('Y-m-d H:i:s') }}</span>
                     </div>
